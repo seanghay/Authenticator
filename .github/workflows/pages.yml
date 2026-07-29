@@ -37,6 +37,7 @@ jobs:
         run: |
           mkdir -p _site
           cp site/index.html _site/index.html
+          cp site/netra-studio.svg _site/netra-studio.svg
           cp Authenticator/Assets.xcassets/AppIcon.appiconset/icon_512x512.png _site/icon.png
           cp Screenshots/app.png _site/screenshot.png
           cp Screenshots/add-account.png _site/add-account.png

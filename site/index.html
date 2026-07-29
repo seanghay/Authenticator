@@ -283,6 +283,21 @@ footer {
 footer a { text-decoration: none; }
 
 footer a:hover { text-decoration: underline; }
+
+.studio { margin-top: 28px; }
+
+/* line-height 0 stops the inline image leaving a gap under the link box. */
+.studio-logo {
+  display: inline-block;
+  line-height: 0;
+}
+
+.studio-logo img {
+  width: 90px;
+  height: auto;
+}
+
+.studio p { margin: 12px 0 0; }
 </style>
 </head>
 <body>
@@ -404,8 +419,12 @@ footer a:hover { text-decoration: underline; }
     <a href="https://github.com/seanghay/Authenticator">GitHub</a> ·
     <a href="https://github.com/seanghay/Authenticator/releases">Releases</a> ·
     <a href="https://github.com/seanghay/Authenticator/blob/main/LICENSE">MIT</a>
-    <br><br>
-    Made by <a href="https://github.com/seanghay">seanghay</a>
+    <div class="studio">
+      <a class="studio-logo" href="https://www.facebook.com/netrastudiokh/" target="_blank" rel="noreferrer noopener">
+        <img src="netra-studio.svg" alt="Netra Studio" width="90" height="36">
+      </a>
+      <p>Made by <a href="https://netrastudio.com">Netra Studio</a></p>
+    </div>
   </div>
 </footer>
 
