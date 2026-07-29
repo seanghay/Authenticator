@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dmg:
+    name: Build DMG
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Show toolchain
+        run: xcodebuild -version
+
+      # No Developer ID certificate on CI, so fall back to ad-hoc signing —
+      # the same thing Xcode's "Sign to Run Locally" does.
+      - name: Build app
+        run: |
+          xcodebuild \
+            -project Authenticator.xcodeproj \
+            -scheme Authenticator \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="-" \
+            DEVELOPMENT_TEAM="" \
+            build
+
+      - name: Create DMG
+        id: dmg
+        run: |
+          # create-dmg writes straight into the destination and does not create it.
+          mkdir -p dist
+
+          npx --yes create-dmg \
+            --no-code-sign \
+            --no-version-in-filename \
+            --overwrite \
+            build/Build/Products/Release/Authenticator.app \
+            dist
+
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="$(git rev-parse --short HEAD)"
+          fi
+
+          built="$(ls dist/*.dmg | head -1)"
+          mv "$built" "dist/Authenticator-${version}.dmg"
+          echo "path=dist/Authenticator-${version}.dmg" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Authenticator-dmg
+          path: ${{ steps.dmg.outputs.path }}
+
+      - name: Publish release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DMG: ${{ steps.dmg.outputs.path }}
+        run: |
+          cat > notes.md <<'EOF'
+          Ad-hoc signed and **not notarized**, so macOS will refuse to open it until the
+          quarantine flag is cleared. Drag Authenticator to Applications, then run:
+
+          ```sh
+          xattr -dr com.apple.quarantine /Applications/Authenticator.app
+          ```
+
+          **Upgrading from an earlier release?** Export your accounts first
+          (File ▸ Export Accounts…). Ad-hoc builds have no stable code-signing
+          identity, so macOS may prompt before letting the new build read its own
+          vault key from the Keychain.
+          EOF
+
+          gh release create "$GITHUB_REF_NAME" "$DMG" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file notes.md
