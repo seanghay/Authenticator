@@ -1,0 +1,12 @@
+{
+  "name": "authenticator-og",
+  "private": true,
+  "type": "module",
+  "description": "Generates site/og.png, the Open Graph card for the landing page.",
+  "scripts": {
+    "build": "node generate.mjs"
+  },
+  "dependencies": {
+    "takumi-js": "^2.5.3"
+  }
+}

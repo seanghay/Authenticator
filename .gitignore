@@ -14,3 +14,5 @@ xcuserdata/
 *.dSYM
 .swiftpm/
 Packages/
+node_modules/
+package-lock.json
